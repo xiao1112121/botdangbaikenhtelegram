@@ -297,9 +297,15 @@ class MassPostBot:
                 InlineKeyboardButton("📝 Lịch sử đăng", callback_data="post_history"),
                 InlineKeyboardButton("⚙️ Cài đặt", callback_data="settings")
             ],
+ HEAD
             [
                 InlineKeyboardButton("🌐 Ngôn ngữ", callback_data="show_language_menu")
             ]
+
+            # [
+            #     InlineKeyboardButton("😊 Công cụ Emoji", callback_data="emoji_tools")
+            # ]
+ cb64ceb (Clean up .pyc and __pycache__ files)
         ]
         
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -339,9 +345,15 @@ class MassPostBot:
                 InlineKeyboardButton("📝 Lịch sử đăng", callback_data="post_history"),
                 InlineKeyboardButton("⚙️ Cài đặt", callback_data="settings")
             ],
+<<<<<<< HEAD
             [
                 InlineKeyboardButton("🌐 Ngôn ngữ", callback_data="show_language_menu")
             ]
+=======
+            # [
+            #     InlineKeyboardButton("😊 Công cụ Emoji", callback_data="emoji_tools")
+            # ]
+>>>>>>> cb64ceb (Clean up .pyc and __pycache__ files)
         ]
 
         stats_text = f"""
