@@ -1,0 +1,39 @@
+# Bot Token từ @BotFather
+BOT_TOKEN=your_bot_token_here
+
+# ID của các admin (cách nhau bởi dấu phẩy)
+ADMIN_IDS=123456789,987654321
+
+# Cấu hình đăng bài
+DEFAULT_DELAY_BETWEEN_POSTS=2
+MAX_CHANNELS_PER_POST=50
+
+# Cấu hình scheduler
+SCHEDULER_CHECK_INTERVAL=30
+AUTO_CLEANUP_DAYS=30
+
+# Cấu hình file database
+CHANNELS_DB_FILE=channels.json
+POSTS_DB_FILE=posts.json
+SCHEDULED_POSTS_DB_FILE=scheduled_posts.json
+
+# Cấu hình backup
+ENABLE_AUTO_BACKUP=true
+BACKUP_INTERVAL_HOURS=24
+
+# Cấu hình Telegram
+PARSE_MODE_DEFAULT=Markdown
+DISABLE_WEB_PAGE_PREVIEW=false
+
+# Cấu hình timezone
+TIMEZONE=Asia/Ho_Chi_Minh
+
+# Cấu hình logging
+LOG_LEVEL=INFO
+LOG_FILE=bot.log
+
+# Hướng dẫn sử dụng:
+# 1. Sao chép file này thành .env
+# 2. Thay thế your_bot_token_here bằng token thực từ @BotFather
+# 3. Thay thế admin IDs bằng ID Telegram của bạn
+# 4. Chạy bot: python run.py 

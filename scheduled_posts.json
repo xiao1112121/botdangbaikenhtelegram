@@ -1,0 +1,125 @@
+{
+  "schedule_20240120_100000_1": {
+    "id": "schedule_20240120_100000_1",
+    "content": "🔥 Chào buổi sáng! Hôm nay là ngày mới tuyệt vời!",
+    "channels": [
+      "@testchannel1",
+      "@testchannel2"
+    ],
+    "scheduled_time": "2024-01-20T10:00:00",
+    "repeat_type": "daily",
+    "status": "failed",
+    "error": "'next_execution'",
+    "next_execution": "2024-01-20T10:00:00"
+  },
+  "schedule_20240121_150000_2": {
+    "id": "schedule_20240121_150000_2",
+    "content": "🚀 Bài đăng quảng cáo sản phẩm mới!",
+    "channels": [
+      "@testchannel1"
+    ],
+    "scheduled_time": "2024-01-21T15:00:00",
+    "repeat_type": "none",
+    "status": "failed",
+    "error": "'next_execution'",
+    "next_execution": "2024-01-21T15:00:00"
+  },
+  "schedule_20250715_122716_2": {
+    "id": "schedule_20250715_122716_2",
+    "post_data": {
+      "type": "text",
+      "text": "🔸🔸🔸🔸🔸🔸🔸\n\n🎀 GUIA DE REGISTRO DE CONTA  🎀\n\n1️⃣: Visite a página inicial:\nAbra o aplicativo ou site\n   🍪🍪  AQUI 🍪  🍪\nClique no botão \"Registro\" no canto superior direito.\n\n2️⃣: Preencha as informações de registro:\nNúmero de telefone: digite o número de telefone (incluindo o código do país, por exemplo, +55).✅\nSenha: Crie uma senha forte e fácil de lembrar.\nCódigo de verificação: digite o código mostrado na imagem.✅\n\n3️⃣: Cadastro completo: \nClique no botão \"Registrar agora\".\nApós criar uma conta, você pode usar seu número de telefone e senha para fazer login via \"Conecte-se\".\n\nPacotes de presentes para membros!\n💰 Pacote de presente 😍 Bônus de 200% de cashback \n💰 Pacote de presente 😍Bônus de 150% de reembolso\n💰 Pacote de presente 😍 Bônus de 175% de cashback\nCadastre-se agora para receber seu pacote de presente! 🧧\n\n➡️ Você só precisa depositar um mínimo de R$ 10 para aproveitar o bônus de cashback de 200% do Pacote 1. Por exemplo, se você depositar R$ 20, receberá um bônus de R$ 40 🧧\n\n💬 Serviços on-line 24/7  \n😂 Instagram\n📱 WhatsApp\n😀 Atividade do canal\n✈️  Telegram\n✈️ TG 24/7SAC \n💰 BAIXE RS50\n\n🌟🌟🌟🌟🌟🌟🌟🌟🌟🌟☺️☺️"
+    },
+    "channels": [
+      {
+        "id": "-1002168515941",
+        "name": "kkkk99_bet",
+        "active": true,
+        "added_date": "2024-01-15T10:30:00"
+      },
+      {
+        "id": "-1002162701877",
+        "name": "KKKK77_BET",
+        "active": true,
+        "added_date": "2024-01-16T14:20:00"
+      },
+      {
+        "id": "-1002237080837",
+        "name": "kkkk03_bet",
+        "active": false,
+        "added_date": "2024-01-17T09:15:00"
+      },
+      {
+        "id": "-1002376181681",
+        "name": "🇧🇷 ABCDBET | Canal oficial🍀",
+        "active": true,
+        "added_date": "2025-07-15T09:10:00"
+      }
+    ],
+    "scheduled_time": "2025-07-15T14:30:00",
+    "repeat_type": "none",
+    "repeat_count": 1,
+    "executed_count": 1,
+    "status": "completed",
+    "created_at": "2025-07-15T12:27:16.879483",
+    "next_execution": "2025-07-15T14:30:00",
+    "last_execution": "2025-07-15T14:30:20.689839",
+    "execution_history": [
+      {
+        "executed_at": "2025-07-15T14:30:20.691834",
+        "success": true,
+        "channels_sent": 4,
+        "results": []
+      }
+    ]
+  },
+  "schedule_20250715_125743_3": {
+    "id": "schedule_20250715_125743_3",
+    "post_data": {
+      "type": "text",
+      "text": "s"
+    },
+    "channels": [
+      {
+        "id": "-1002168515941",
+        "name": "kkkk99_bet",
+        "active": true,
+        "added_date": "2024-01-15T10:30:00"
+      },
+      {
+        "id": "-1002162701877",
+        "name": "KKKK77_BET",
+        "active": true,
+        "added_date": "2024-01-16T14:20:00"
+      },
+      {
+        "id": "-1002237080837",
+        "name": "kkkk03_bet",
+        "active": false,
+        "added_date": "2024-01-17T09:15:00"
+      },
+      {
+        "id": "-1002376181681",
+        "name": "🇧🇷 ABCDBET | Canal oficial🍀",
+        "active": true,
+        "added_date": "2025-07-15T09:10:00"
+      }
+    ],
+    "scheduled_time": "2025-07-16T07:05:00",
+    "repeat_type": "none",
+    "repeat_count": 1,
+    "executed_count": 1,
+    "status": "completed",
+    "created_at": "2025-07-15T12:57:43.916282",
+    "next_execution": "2025-07-16T07:05:00",
+    "last_execution": "2025-07-16T07:57:26.904927",
+    "execution_history": [
+      {
+        "executed_at": "2025-07-16T07:57:26.906927",
+        "success": true,
+        "channels_sent": 4,
+        "results": []
+      }
+    ]
+  }
+}

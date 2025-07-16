@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Dashboard Bot Đăng Bài</title>
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body class="bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">📢 MassPost Bot</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link active" href="/">Trang chủ</a></li>
+            <li class="nav-item"><a class="nav-link" href="/channels">Kênh</a></li>
+            <li class="nav-item"><a class="nav-link" href="/posts">Bài đăng</a></li>
+            <li class="nav-item"><a class="nav-link" href="/schedule">Lịch</a></li>
+            <li class="nav-item"><a class="nav-link" href="/group">Nhóm</a></li>
+            <li class="nav-item"><a class="nav-link" href="/emoji">Emoji</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container">
+      <!-- Stats cards -->
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="card shadow-sm text-center">
+            <div class="card-body">
+              <h6 class="card-title text-muted">Tổng kênh</h6>
+              <h2 class="fw-bold">{{ stats.total_channels }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm text-center">
+            <div class="card-body">
+              <h6 class="card-title text-muted">Bài đã đăng</h6>
+              <h2 class="fw-bold">{{ stats.total_posts }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm text-center">
+            <div class="card-body">
+              <h6 class="card-title text-muted">Lịch chờ</h6>
+              <h2 class="fw-bold">{{ stats.pending_schedules }}</h2>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card shadow-sm text-center">
+            <div class="card-body">
+              <h6 class="card-title text-muted">Tỷ lệ thành công</h6>
+              <h2 class="fw-bold">{{ stats.success_rate }}%</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="mt-5">
+        <h4>Hành động nhanh</h4>
+        <div class="d-grid gap-2 d-md-flex">
+          <a href="/posts/new" class="btn btn-success">➕ Tạo bài đăng</a>
+          <a href="/channels" class="btn btn-primary">📋 Quản lý kênh</a>
+          <a href="/schedule" class="btn btn-warning">⏰ Lịch đăng</a>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html> 

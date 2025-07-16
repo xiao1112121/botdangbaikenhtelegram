@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Quản lý nhóm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">Dashboard</a>
+      </div>
+    </nav>
+    <div class="container">
+      <h3>👥 Quản lý nhóm</h3>
+      <p>Số thành viên: <strong>{{ member_count }}</strong></p>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tên</th>
+            <th>Username</th>
+            <th>Quyền</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody id="adminTable">
+          {% for admin in admins %}
+          <tr>
+            <td>{{ admin.user.id }}</td>
+            <td>{{ admin.user.first_name }}</td>
+            <td>@{{ admin.user.username }}</td>
+            <td>{{ admin.status }}</td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="kick('{{ admin.user.id }}')">Kick</button>
+              <button class="btn btn-sm btn-warning" onclick="ban('{{ admin.user.id }}')">Ban</button>
+              <button class="btn btn-sm btn-success" onclick="unban('{{ admin.user.id }}')">Unban</button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <script>
+      async function kick(userId){
+        await fetch('/api/group/kick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId})});
+        location.reload();
+      }
+      async function ban(userId){
+        await fetch('/api/group/kick',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId})});
+        location.reload();
+      }
+      async function unban(userId){
+        await fetch('/api/group/unban',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user_id:userId})});
+        location.reload();
+      }
+    </script>
+  </body>
+</html> 

@@ -1,0 +1,11 @@
+{
+  "post_001": {
+    "id": "post_001",
+    "content": "⭐ Bài đăng đầu tiên từ dashboard",
+    "channels": [
+      "@testchannel1"
+    ],
+    "sent_time": "2024-01-19T08:30:00",
+    "status": "sent"
+  }
+}
