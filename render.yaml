@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: botdangbaikentelegram
+    runtime: python
+    buildCommand: ./render-build.sh
+    startCommand: python mass_post_bot.py
+    plan: free
+    region: singapore
