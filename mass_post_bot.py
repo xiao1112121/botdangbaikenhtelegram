@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # (Dòng trống cuối file, chuẩn hóa thụt lề)
 import asyncio
@@ -29,7 +28,6 @@ from config import Config
 from channel_manager import ChannelManager
 from post_manager import PostManager
 from scheduler import PostScheduler
-from emoji_handler import EmojiHandler
 from settings_manager import SettingsManager
 from language_manager import LanguageManager, Language, get_text
 from analytics_manager import AnalyticsManager
@@ -48,6 +46,42 @@ if sys.platform.startswith("win"):
 
 # pyright: reportOptionalMemberAccess=false, reportAttributeAccessIssue=false, reportCallIssue=false
 class MassPostBot:
+    async def language_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        # Hiển thị menu chọn ngôn ngữ cho bot
+        if not update.message:
+            return
+        user_id = self.check_user_and_admin(update)
+        if user_id is None:
+            return
+        keyboard = [
+            [
+                InlineKeyboardButton("🇻🇳 Tiếng Việt", callback_data="set_lang_vi"),
+                InlineKeyboardButton("🇬🇧 English", callback_data="set_lang_en"),
+                InlineKeyboardButton("🇨🇳 中文", callback_data="set_lang_zh")
+            ]
+        ]
+        await update.message.reply_text(
+            "🌐 Chọn ngôn ngữ cho bot:",
+            reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+
+    async def handle_set_language(self, query, data: str):
+        # Xử lý chọn ngôn ngữ từ callback
+        user_id = query.from_user.id
+        if data == "set_lang_vi":
+            lang = "vi"
+            text = "Đã chuyển ngôn ngữ bot thành Tiếng Việt."
+        elif data == "set_lang_en":
+            lang = "en"
+            text = "Bot language changed to English."
+        elif data == "set_lang_zh":
+            lang = "zh"
+            text = "已切换为中文。"
+        else:
+            lang = "vi"
+            text = "Đã chuyển ngôn ngữ bot thành Tiếng Việt."
+        self.user_states.setdefault(user_id, {})['language'] = lang
+        await query.edit_message_text(text)
     async def delete_saved_button(self, query, idx: int):
         """Xóa nút đã lưu theo chỉ số idx"""
         if 0 <= idx < len(self.saved_buttons):
@@ -87,7 +121,6 @@ class MassPostBot:
         self.scheduler = PostScheduler(bot=self.application.bot)
         # Đảm bảo scheduler có bot instance
         # self.scheduler.set_bot(self.application.bot)  # không cần vì truyền trong ctor
-        self.emoji_handler = EmojiHandler()
         self.settings_manager = SettingsManager()
         self.language_manager = LanguageManager()
         self.analytics_manager = AnalyticsManager()
@@ -113,11 +146,10 @@ class MassPostBot:
         self.application.add_handler(CommandHandler("channels", self.show_channels))
         self.application.add_handler(CommandHandler("add_channel", self.add_channel))
         self.application.add_handler(CommandHandler("post", self.create_post))
-        self.application.add_handler(CommandHandler("emoji", self.emoji_command))
-        self.application.add_handler(CommandHandler("emoji_help", self.emoji_help))
         self.application.add_handler(CommandHandler("stats", self.show_stats))
         self.application.add_handler(CommandHandler("cancel", self.cancel_flow))
         self.application.add_handler(CommandHandler("schedules", self.list_schedules))
+        self.application.add_handler(CommandHandler("language", self.language_command))
         
         # Callback handlers
         self.application.add_handler(CallbackQueryHandler(self.handle_callback))
@@ -159,16 +191,19 @@ class MassPostBot:
         if user_id is None:
             return
         
+        # Lấy ngôn ngữ người dùng
+        lang_code = self.user_states.get(user_id, {}).get('language', 'vi')
+        from language_manager import Language
+        welcome_text = self.language_manager.get_text('welcome', Language(lang_code))
         await update.message.reply_text(
-            Config.WELCOME_MESSAGE,
+            welcome_text,
             parse_mode=ParseMode.MARKDOWN
         )
     
     async def help_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Lệnh /help"""
+        # Lệnh /help
         if not update.message:
             return
-        
         help_text = """
 🤖 **Hướng dẫn sử dụng Bot Đăng Bài Hàng Loạt**
 
@@ -178,7 +213,6 @@ class MassPostBot:
 /channels - Xem danh sách kênh
 /add_channel - Thêm kênh mới
 /post - Tạo bài đăng mới
-/emoji - Công cụ emoji
 /stats - Thống kê bot
 
 **🎯 Quy trình sử dụng:**
@@ -188,11 +222,9 @@ class MassPostBot:
 4. Theo dõi thống kê: /stats
 
 **💡 Mẹo:**
-- Sử dụng emoji shortcodes: [fire] → 🔥
 - Bot phải là admin trong kênh
 - Có thể đăng text, hình ảnh, video
         """
-        
         await update.message.reply_text(help_text, parse_mode=ParseMode.MARKDOWN)
     
     async def admin_panel(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -226,7 +258,7 @@ class MassPostBot:
                 InlineKeyboardButton("⚙️ Cài đặt", callback_data="settings")
             ],
             [
-                InlineKeyboardButton("😊 Công cụ Emoji", callback_data="emoji_tools")
+                InlineKeyboardButton("🌐 Ngôn ngữ", callback_data="show_language_menu")
             ]
         ]
         
@@ -268,7 +300,7 @@ class MassPostBot:
                 InlineKeyboardButton("⚙️ Cài đặt", callback_data="settings")
             ],
             [
-                InlineKeyboardButton("😊 Công cụ Emoji", callback_data="emoji_tools")
+                InlineKeyboardButton("🌐 Ngôn ngữ", callback_data="show_language_menu")
             ]
         ]
 
@@ -290,6 +322,8 @@ class MassPostBot:
         )
     
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        if data == "show_language_menu":
+            await self.language_command(query, context)
         # Xử lý callback từ inline keyboard
         query = update.callback_query
         if not query:
@@ -318,7 +352,9 @@ class MassPostBot:
                 await query.answer("❌ Lỗi khi xóa nút đã lưu!", show_alert=True)
             return
 
-        if data == "quick_post":
+        if data in ["set_lang_vi", "set_lang_en", "set_lang_zh"]:
+            await self.handle_set_language(query, data)
+        elif data == "quick_post":
             # Khởi tạo state cài đặt bài đăng (mặc định)
             user_id = query.from_user.id
             self.user_states[user_id] = {
@@ -935,35 +971,34 @@ class MassPostBot:
         content = {}
         
         if update.message.text:
-            # Xử lý emoji
-            processed_text = self.emoji_handler.process_text_with_emoji(update.message.text)
+            # Lưu nội dung text
             content = {
                 'type': 'text',
-                'text': processed_text
+                'text': update.message.text
             }
         elif update.message.photo:
             content = {
                 'type': 'photo',
                 'photo': update.message.photo[-1].file_id,
-                'caption': self.emoji_handler.process_text_with_emoji(update.message.caption or '')
+                'caption': update.message.caption or ''
             }
         elif update.message.video:
             content = {
                 'type': 'video',
                 'video': update.message.video.file_id,
-                'caption': self.emoji_handler.process_text_with_emoji(update.message.caption or '')
+                'caption': update.message.caption or ''
             }
         elif update.message.document:
             content = {
                 'type': 'document',
                 'document': update.message.document.file_id,
-                'caption': self.emoji_handler.process_text_with_emoji(update.message.caption or '')
+                'caption': update.message.caption or ''
             }
         elif update.message.audio:
             content = {
                 'type': 'audio',
                 'audio': update.message.audio.file_id,
-                'caption': self.emoji_handler.process_text_with_emoji(update.message.caption or '')
+                'caption': update.message.caption or ''
             }
         
         # Lưu nội dung
@@ -1137,40 +1172,6 @@ class MassPostBot:
         elif hasattr(message_sender, 'edit_message_text'):
             await message_sender.edit_message_text(text, reply_markup=reply_markup, parse_mode=ParseMode.MARKDOWN)
     
-    async def emoji_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Lệnh emoji"""
-        if not update.message:
-            return
-        
-        user_id = self.check_user_and_admin(update)
-        if user_id is None:
-            return
-        
-        if not await self.is_admin(user_id):
-            await update.message.reply_text("❌ Bạn không có quyền sử dụng lệnh này!")
-            return
-        
-        keyboard = self.emoji_handler.get_emoji_keyboard("popular")
-        reply_markup = InlineKeyboardMarkup([
-            [InlineKeyboardButton(emoji, callback_data=f"emoji_{emoji}") for emoji in row]
-            for row in keyboard
-        ])
-        
-        picker_text = self.emoji_handler.get_emoji_picker_text()
-        
-        await update.message.reply_text(
-            picker_text,
-            reply_markup=reply_markup,
-            parse_mode=ParseMode.MARKDOWN
-        )
-    
-    async def emoji_help(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Lệnh emoji help"""
-        if not update.message:
-            return
-        
-        help_text = self.emoji_handler.get_emoji_help_text()
-        await update.message.reply_text(help_text, parse_mode=ParseMode.MARKDOWN)
     
     async def show_stats(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Hiển thị thống kê"""
@@ -1551,14 +1552,16 @@ class MassPostBot:
         # Sau khi xoá → hiển thị lại menu quản lý kênh
         try:
             await self.show_manage_channels(query)
-        except BadRequest as e:
+        except Exception as e:
             # Nếu nội dung không đổi, Telegram sẽ báo lỗi, bỏ qua
-            if "Message is not modified" not in str(e):
+            if "Message is not modified" in str(e):
+                pass
+            else:
                 raise
         await query.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
     
     async def handle_select_channel(self, query, data: str):
-        """Toggle chọn/huỷ chọn kênh trong state rồi refresh keyboard"""
+        # Toggle chọn/huỷ chọn kênh trong state rồi refresh keyboard
         user_id = query.from_user.id
         state = self.user_states.get(user_id)
         if not state:
@@ -1574,10 +1577,10 @@ class MassPostBot:
         await self.show_channel_selection(query, None, refresh=True)
 
     async def handle_channels_done(self, query):
-        """Người dùng xác nhận chọn kênh"""
+        # Người dùng xác nhận chọn kênh
         user_id = query.from_user.id
         state = self.user_states.get(user_id)
-        if not state:
+        if not isinstance(state, dict) or not state:
             return
         selected = state.get('selected_channels', [])
         if not selected:
@@ -1586,7 +1589,7 @@ class MassPostBot:
         if state.get('action') == 'creating_post':
             # gửi ngay tới kênh đã chọn
             state['send_channels_override'] = selected
-            await self._send_post_to_selected(query, state)
+            await self._send_post_to_selected(query, dict(state))
         elif state.get('action') == 'scheduling_post':
             state['channels_selected'] = selected
             state['step'] = 'selecting_date'
@@ -1689,7 +1692,7 @@ class MassPostBot:
         reply_markup = None
         if post.get('buttons'):
             keyboard = [[InlineKeyboardButton(btn['text'], url=btn['url'])] for btn in post['buttons']]
-        reply_markup = InlineKeyboardMarkup(keyboard)
+            reply_markup = InlineKeyboardMarkup(keyboard)
         for ch in channels:
             channel_id_any = ch.get('id')
             if channel_id_any is None:
