@@ -46,6 +46,46 @@ if sys.platform.startswith("win"):
 
 # pyright: reportOptionalMemberAccess=false, reportAttributeAccessIssue=false, reportCallIssue=false
 class MassPostBot:
+    # --- Mẫu bài đăng (Template) ---
+    def _load_templates(self):
+        path = pathlib.Path("post_templates.json")
+        if path.exists():
+            with open(path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        return []
+
+    def _save_templates(self, templates):
+        with open("post_templates.json", "w", encoding="utf-8") as f:
+            json.dump(templates, f, ensure_ascii=False, indent=2)
+
+    async def show_templates(self, update):
+        templates = self._load_templates()
+        if not templates:
+            await update.message.reply_text("⚠️ Chưa có mẫu bài đăng nào.")
+            return
+        keyboard = [[InlineKeyboardButton(t['name'], callback_data=f"use_template_{i}")] for i, t in enumerate(templates)]
+        keyboard.append([InlineKeyboardButton("➕ Tạo mẫu mới", callback_data="add_template")])
+        await update.message.reply_text("📋 Chọn mẫu bài đăng:", reply_markup=InlineKeyboardMarkup(keyboard))
+
+    async def handle_template_callback(self, query, data):
+        if data == "add_template":
+            await query.edit_message_text("✏️ Gửi nội dung mẫu bài đăng (text/media)")
+            user_id = query.from_user.id
+            self.user_states[user_id] = {'action': 'adding_template', 'step': 'waiting_content'}
+        elif data.startswith("use_template_"):
+            idx = int(data.replace("use_template_", ""))
+            templates = self._load_templates()
+            if 0 <= idx < len(templates):
+                template = templates[idx]
+                user_id = query.from_user.id
+                self.user_states[user_id] = {
+                    'action': 'creating_post',
+                    'step': 'waiting_content',
+                    'post_data': template['content'],
+                    'settings': {}
+                }
+                await query.edit_message_text("✅ Đã chọn mẫu. Gửi nội dung bổ sung hoặc nhấn tiếp tục.")
+
     async def language_command(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Hiển thị menu chọn ngôn ngữ cho bot
         if not update.message:
@@ -893,7 +933,6 @@ class MassPostBot:
         await update.message.reply_text(
             "📝 **Tạo bài đăng mới**\n\n"
             "Gửi nội dung bài đăng (text, ảnh, video, file).\n"
-            "Sử dụng emoji shortcodes: [fire] → 🔥\n\n"
             "Gõ /cancel để hủy.",
             parse_mode=ParseMode.MARKDOWN
         )
@@ -920,6 +959,25 @@ class MassPostBot:
             await self.process_post_content(update, context)
         elif state.get('action') == 'creating_post' and state.get('step') == 'adding_buttons':
             await self.process_add_buttons(update, context)
+        elif state.get('action') == 'adding_template' and state.get('step') == 'waiting_content':
+            # Lưu mẫu bài đăng
+            content = {}
+            if update.message.text:
+                content = {'type': 'text', 'text': update.message.text}
+            elif update.message.photo:
+                content = {'type': 'photo', 'photo': update.message.photo[-1].file_id, 'caption': update.message.caption or ''}
+            elif update.message.video:
+                content = {'type': 'video', 'video': update.message.video.file_id, 'caption': update.message.caption or ''}
+            elif update.message.document:
+                content = {'type': 'document', 'document': update.message.document.file_id, 'caption': update.message.caption or ''}
+            elif update.message.audio:
+                content = {'type': 'audio', 'audio': update.message.audio.file_id, 'caption': update.message.caption or ''}
+            templates = self._load_templates()
+            name = f"Mẫu {len(templates)+1}"
+            templates.append({'name': name, 'content': content})
+            self._save_templates(templates)
+            await update.message.reply_text(f"✅ Đã lưu mẫu bài đăng: {name}")
+            self.user_states.pop(user_id, None)
         elif state.get('action') == 'adding_channel' and state.get('step') == 'waiting_channel':
             await self.process_add_channel(update, context)
         elif state.get('action') == 'searching_channel' and state.get('step') == 'waiting_query':
@@ -967,39 +1025,24 @@ class MassPostBot:
         if user_id is None:
             return
         
-        # Xử lý nội dung
+        # Tích hợp AI kiểm duyệt nội dung
         content = {}
-        
         if update.message.text:
-            # Lưu nội dung text
-            content = {
-                'type': 'text',
-                'text': update.message.text
-            }
+            content = {'type': 'text', 'text': update.message.text}
         elif update.message.photo:
-            content = {
-                'type': 'photo',
-                'photo': update.message.photo[-1].file_id,
-                'caption': update.message.caption or ''
-            }
+            content = {'type': 'photo', 'photo': update.message.photo[-1].file_id, 'caption': update.message.caption or ''}
         elif update.message.video:
-            content = {
-                'type': 'video',
-                'video': update.message.video.file_id,
-                'caption': update.message.caption or ''
-            }
+            content = {'type': 'video', 'video': update.message.video.file_id, 'caption': update.message.caption or ''}
         elif update.message.document:
-            content = {
-                'type': 'document',
-                'document': update.message.document.file_id,
-                'caption': update.message.caption or ''
-            }
+            content = {'type': 'document', 'document': update.message.document.file_id, 'caption': update.message.caption or ''}
         elif update.message.audio:
-            content = {
-                'type': 'audio',
-                'audio': update.message.audio.file_id,
-                'caption': update.message.caption or ''
-            }
+            content = {'type': 'audio', 'audio': update.message.audio.file_id, 'caption': update.message.caption or ''}
+
+        # AI kiểm duyệt nội dung
+        ai_result = await self.ai_assistant.check_spam_content(content.get('text', '') if content.get('type') == 'text' else content.get('caption', ''))
+        if ai_result.get('is_spam'):
+            await update.message.reply_text(f"⚠️ Nội dung bị chặn bởi AI kiểm duyệt: {ai_result.get('reason', 'Nội dung không phù hợp.')}")
+            return
         
         # Lưu nội dung
         self.user_states[user_id]['post_data'] = content
@@ -1782,8 +1825,7 @@ class MassPostBot:
         }
         await query.edit_message_text(
             "📝 **Tạo bài đăng (Text)**\n\n" \
-            "Gửi nội dung bài đăng (chỉ text).\n" \
-            "Bạn có thể dùng shortcode emoji: [fire] → 🔥",
+            "Gửi nội dung bài đăng (chỉ text).",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Quay lại", callback_data="back_main")]]),
             parse_mode=ParseMode.MARKDOWN
         )
@@ -1808,7 +1850,7 @@ class MassPostBot:
         }
         msg = instructions.get(media_type, "Gửi nội dung bài đăng.")
         await query.edit_message_text(
-            f"📤 **Tạo bài đăng ({media_type.upper()})**\n\n{msg}\nBạn có thể kèm caption và shortcode emoji.",
+            f"📤 **Tạo bài đăng ({media_type.upper()})**\n\n{msg}",
             reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🔙 Quay lại", callback_data="back_main")]]),
             parse_mode=ParseMode.MARKDOWN
         )
@@ -2165,15 +2207,7 @@ class MassPostBot:
         # Quay về trang quản lý kênh
         await self.show_manage_channels(query)
 
-    async def handle_emoji_callback(self, query, data: str):
-        """Trả về emoji người dùng chọn từ picker"""
-        emoji_char = data.replace("emoji_", "")
-        await query.answer(text=emoji_char, show_alert=False)
-        try:
-            # Gửi emoji để người dùng copy
-            await query.message.reply_text(emoji_char)
-        except Exception:
-            pass
+
 
     async def notify_admins(self, text: str):
         """Gửi thông báo realtime tới tất cả admin."""
@@ -3289,7 +3323,7 @@ class MassPostBot:
             f"📄 **Số item/trang:** {interface_settings.get('pagination_size', 5)}\n"
             f"📊 **Hiện thống kê kênh:** {bool_icon(interface_settings.get('show_channel_stats', True))}\n"
             f"👁️ **Xem trước bài đăng:** {bool_icon(interface_settings.get('show_post_previews', True))}\n"
-            f"😊 **Phím tắt emoji:** {bool_icon(interface_settings.get('emoji_shortcuts_enabled', True))}\n"
+            # f"😊 **Phím tắt emoji:** {bool_icon(interface_settings.get('emoji_shortcuts_enabled', True))}\n"
             f"📱 **Mini app:** {bool_icon(interface_settings.get('mini_app_enabled', True))}\n\n"
             f"⚙️ **Chọn cài đặt để thay đổi:**"
         )
@@ -3304,7 +3338,7 @@ class MassPostBot:
                 InlineKeyboardButton("👁️ Preview", callback_data="settings_toggle_post_previews")
             ],
             [
-                InlineKeyboardButton("😊 Emoji", callback_data="settings_toggle_emoji_shortcuts"),
+
                 InlineKeyboardButton("📱 Mini app", callback_data="settings_toggle_mini_app")
             ],
             [
@@ -3464,7 +3498,7 @@ class MassPostBot:
             "toggle_logging": ("security", "log_all_actions"),
             "toggle_channel_stats": ("interface", "show_channel_stats"),
             "toggle_post_previews": ("interface", "show_post_previews"),
-            "toggle_emoji_shortcuts": ("interface", "emoji_shortcuts_enabled"),
+
             "toggle_mini_app": ("interface", "mini_app_enabled"),
             "toggle_debug": ("advanced", "debug_mode"),
             "toggle_verbose": ("advanced", "verbose_logging"),
